@@ -1,0 +1,152 @@
+*{box-sizing:border-box}
+:root{
+  --bg:#070b14;
+  --card:rgba(16,22,36,.82);
+  --line:rgba(255,255,255,.12);
+  --text:#fff;
+  --muted:rgba(255,255,255,.72);
+}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+button,input{font:inherit}
+.hidden{display:none!important}
+
+.splash{position:fixed;inset:0;display:grid;place-items:center;overflow:hidden;background:#000;z-index:20}
+.splash-bg,.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.splash-overlay,.hero-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.16),rgba(0,0,0,.68))}
+.splash-card{position:relative;z-index:2;text-align:center;padding:28px;width:min(90vw,520px);backdrop-filter:blur(12px);background:rgba(5,8,14,.42);border:1px solid rgba(255,255,255,.18);border-radius:28px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.splash-card h1{font-size:clamp(34px,7vw,64px);margin:8px 0 12px}
+.splash-card p{color:var(--muted);font-size:18px;margin:0 0 22px}
+.eyebrow{letter-spacing:.15em;font-size:12px;color:rgba(255,255,255,.72)}
+.primary,.ghost{border:0;border-radius:999px;padding:14px 22px;cursor:pointer}
+.primary{background:#fff;color:#111;font-weight:700}
+.ghost{background:rgba(255,255,255,.10);color:white;border:1px solid rgba(255,255,255,.15)}
+
+.app{min-height:100vh;padding-bottom:44px}
+.hero{position:relative;min-height:68vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.topbar{position:absolute;z-index:2;top:22px;left:22px;right:22px;display:flex;justify-content:space-between;align-items:center}
+.title-small{font-size:20px;font-weight:700;margin-top:4px}
+.center-card{position:relative;z-index:2;text-align:center;width:min(92vw,520px);padding:26px;border-radius:28px;background:rgba(7,11,20,.48);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(16px)}
+.status{font-size:18px;margin-bottom:16px}
+.login-box{display:grid;gap:12px}
+.login-box input{width:100%;padding:15px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;outline:none}
+.login-box input::placeholder{color:rgba(255,255,255,.5)}
+.hint{font-size:12px;color:var(--muted);line-height:1.45}
+
+.heart-box{display:grid;place-items:center;gap:14px}
+.heart-button{width:164px;height:164px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.32),rgba(255,255,255,.05) 38%,rgba(255,0,80,.12));font-size:82px;cursor:pointer;box-shadow:0 0 0 14px rgba(255,255,255,.03),0 26px 70px rgba(255,0,70,.25);transition:transform .16s ease,filter .16s ease}
+.heart-button:hover{transform:scale(1.04)}
+.heart-button:active{transform:scale(.96)}
+.heart-button[disabled]{filter:grayscale(.65);opacity:.52;cursor:not-allowed}
+.cooldown{color:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:min(1100px,92vw);margin:-54px auto 0;position:relative;z-index:5}
+.stat-card,.message-card{background:var(--card);border:1px solid var(--line);border-radius:24px;backdrop-filter:blur(16px);box-shadow:0 18px 60px rgba(0,0,0,.25)}
+.stat-card{padding:26px;text-align:center}
+.role{font-weight:650;color:rgba(255,255,255,.88)}
+.count{font-size:54px;font-weight:800;margin:8px 0 2px}
+.caption{color:var(--muted)}
+.message-card{width:min(1100px,92vw);margin:16px auto 0;padding:24px}
+.last-message{font-size:22px;margin-top:8px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#fff;color:#111;padding:13px 18px;border-radius:999px;font-weight:700;transition:.25s;z-index:50}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:700px){
+  .hero{min-height:74vh}
+  .stats{grid-template-columns:1fr}
+  .heart-button{width:142px;height:142px;font-size:70px}
+  .count{font-size:46px}
+  .topbar{top:14px;left:14px;right:14px}
+}
+
+
+.flight-layer{
+  position:absolute;
+  inset:0;
+  z-index:2;
+  pointer-events:none;
+  overflow:hidden;
+}
+.city-dot{
+  position:absolute;
+  width:12px;
+  height:12px;
+  margin:-6px 0 0 -6px;
+  border-radius:50%;
+  background:rgba(255,255,255,.96);
+  box-shadow:0 0 0 5px rgba(255,255,255,.14),0 0 22px rgba(255,255,255,.8);
+  opacity:.85;
+}
+.moscow-dot{left:31%;top:40%}
+.hangzhou-dot{left:79%;top:59%}
+
+.flying-heart{
+  position:absolute;
+  left:var(--sx);
+  top:var(--sy);
+  transform:translate(-50%,-50%);
+  font-size:34px;
+  filter:drop-shadow(0 8px 16px rgba(255,0,70,.45));
+  animation:heartFlight 2.25s cubic-bezier(.22,.7,.2,1) forwards;
+  will-change:transform,opacity;
+  z-index:6;
+}
+.flying-heart::after{
+  content:"";
+  position:absolute;
+  inset:-30px;
+  background:radial-gradient(circle,rgba(255,52,94,.20),transparent 62%);
+  border-radius:50%;
+  z-index:-1;
+}
+
+.trail-heart{
+  position:absolute;
+  left:var(--sx);
+  top:var(--sy);
+  transform:translate(-50%,-50%) scale(.55);
+  font-size:18px;
+  opacity:0;
+  animation:trailFlight 1.75s ease-out forwards;
+  animation-delay:var(--delay);
+  z-index:5;
+}
+
+@keyframes heartFlight{
+  0%{
+    left:var(--sx); top:var(--sy);
+    transform:translate(-50%,-50%) scale(.65) rotate(-8deg);
+    opacity:0;
+  }
+  10%{opacity:1}
+  48%{
+    left:var(--mx); top:var(--my);
+    transform:translate(-50%,-50%) scale(1.22) rotate(5deg);
+  }
+  88%{opacity:1}
+  100%{
+    left:var(--ex); top:var(--ey);
+    transform:translate(-50%,-50%) scale(.88) rotate(0deg);
+    opacity:0;
+  }
+}
+@keyframes trailFlight{
+  0%{left:var(--sx);top:var(--sy);opacity:0;transform:translate(-50%,-50%) scale(.35)}
+  15%{opacity:.82}
+  55%{left:var(--mx);top:var(--my);opacity:.7}
+  100%{left:var(--ex);top:var(--ey);opacity:0;transform:translate(-50%,-50%) scale(.8)}
+}
+
+.flight-hint{
+  font-size:12px;
+  color:rgba(255,255,255,.58);
+  max-width:290px;
+  line-height:1.45;
+  text-align:center;
+}
+
+@media(max-width:700px){
+  .moscow-dot{left:31%;top:41%}
+  .hangzhou-dot{left:80%;top:59%}
+  .flying-heart{font-size:30px}
+}

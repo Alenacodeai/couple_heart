@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#080b14" />
+  <title>Нажми на Сердце ❤️</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="splash" class="splash">
+    <img src="assets/cover.png" alt="Мой — Моя" class="splash-bg" />
+    <div class="splash-overlay"></div>
+    <div class="splash-card">
+      <div class="eyebrow">МОСКВА ❤️ ХАНЧЖОУ</div>
+      <h1>Нажми на Сердце</h1>
+      <p>Одно сердечко каждые 30 минут.</p>
+      <button id="enterBtn" class="primary">Войти</button>
+    </div>
+  </div>
+
+  <main id="app" class="app hidden">
+    <section class="hero">
+      <img src="assets/cover.png" alt="" class="hero-bg" />
+      <div class="hero-overlay"></div>
+
+      <div id="flightLayer" class="flight-layer" aria-hidden="true">
+        <div class="city-dot moscow-dot"></div>
+        <div class="city-dot hangzhou-dot"></div>
+      </div>
+
+      <div class="topbar">
+        <div>
+          <div class="eyebrow">НАШЕ МЕСТО</div>
+          <div class="title-small">Нажми на Сердце ❤️</div>
+        </div>
+        <button id="logoutBtn" class="ghost">Выйти</button>
+      </div>
+
+      <div class="center-card">
+        <div id="statusText" class="status">Войдите по ссылке из письма</div>
+
+        <div id="loginBox" class="login-box">
+          <input id="emailInput" type="email" placeholder="Ваш e-mail" autocomplete="email" />
+          <button id="loginBtn" class="primary">Получить ссылку для входа</button>
+          <div class="hint">Доступ разрешен только двум e-mail, указанным в Supabase.</div>
+        </div>
+
+        <div id="heartBox" class="heart-box hidden">
+          <button id="heartBtn" class="heart-button" aria-label="Отправить сердечко">❤️</button>
+          <div id="cooldownText" class="cooldown">Можно отправить сейчас</div>
+          <div class="flight-hint">После нажатия сердечко полетит к любимому человеку ❤️</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <article class="stat-card">
+        <div class="role">Он → Она</div>
+        <div id="himCount" class="count">0</div>
+        <div class="caption">сердечек отправлено</div>
+      </article>
+      <article class="stat-card">
+        <div class="role">Она → Он</div>
+        <div id="herCount" class="count">0</div>
+        <div class="caption">сердечек отправлено</div>
+      </article>
+    </section>
+
+    <section class="message-card">
+      <div class="eyebrow">ПОСЛЕДНЕЕ СЕРДЕЧКО</div>
+      <div id="lastMessage" class="last-message">Пока тихо…</div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
