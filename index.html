@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#080b14" />
+  <title>Нажми на Сердце ❤️</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#070b14;
+      --text:#fff;
+      --muted:rgba(255,255,255,.76);
+      --line:rgba(255,255,255,.14);
+      --glass:rgba(6,10,18,.42);
+    }
+    html,body{
+      margin:0;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+    body{min-height:100vh}
+    button{font:inherit}
+
+    .hero{
+      position:relative;
+      min-height:100svh;
+      overflow:hidden;
+      background:#080b14;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:28px;
+    }
+    .hero-bg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      object-position:center center;
+    }
+    .hero-overlay{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08) 0%, rgba(0,0,0,.08) 45%, rgba(0,0,0,.20) 72%, rgba(0,0,0,.38) 100%);
+    }
+
+    /* Верх экрана оставляем свободным */
+    .top-title{
+      position:absolute;
+      left:50%;
+      top:6.5vh;
+      transform:translateX(-50%);
+      z-index:3;
+      text-align:center;
+      text-shadow:0 4px 22px rgba(0,0,0,.48);
+      width:min(92vw,820px);
+      pointer-events:none;
+    }
+    .eyebrow{
+      letter-spacing:.20em;
+      font-size:12px;
+      color:rgba(255,255,255,.84);
+      margin-bottom:10px;
+    }
+    .title{
+      margin:0;
+      font-size:clamp(44px,7vw,88px);
+      line-height:.96;
+      letter-spacing:-.04em;
+      font-weight:900;
+    }
+    .tagline{
+      margin:14px 0 0;
+      color:rgba(255,255,255,.90);
+      font-size:clamp(18px,2vw,28px);
+      line-height:1.35;
+    }
+
+    /* Премиальная нижняя плашка */
+    .bottom-panel{
+      position:relative;
+      z-index:3;
+      width:min(980px,92vw);
+      border-radius:34px;
+      padding:22px 24px;
+      background:var(--glass);
+      border:1px solid var(--line);
+      backdrop-filter:blur(18px);
+      -webkit-backdrop-filter:blur(18px);
+      box-shadow:
+        0 18px 60px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.07);
+    }
+    .bottom-grid{
+      display:grid;
+      grid-template-columns:180px 1fr;
+      gap:22px;
+      align-items:center;
+    }
+
+    .heart-col{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .heart-button{
+      width:138px;
+      height:138px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.18);
+      background:
+        radial-gradient(circle at 35% 28%,rgba(255,255,255,.24),rgba(255,255,255,.04) 46%,rgba(255,0,80,.08)),
+        rgba(255,255,255,.04);
+      font-size:72px;
+      cursor:pointer;
+      box-shadow:
+        0 0 38px rgba(255,0,86,.22),
+        0 18px 48px rgba(0,0,0,.22);
+      transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+    }
+    .heart-button:hover{
+      transform:scale(1.04);
+      box-shadow:
+        0 0 46px rgba(255,0,86,.28),
+        0 24px 58px rgba(0,0,0,.24);
+    }
+    .heart-button:active{transform:scale(.95)}
+    .heart-button:disabled{
+      opacity:.48;
+      filter:grayscale(.45);
+      cursor:not-allowed;
+    }
+
+    .info-col{
+      display:grid;
+      gap:14px;
+    }
+    .counter-card{
+      width:100%;
+      border-radius:24px;
+      padding:18px 22px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .count{
+      font-size:56px;
+      line-height:1;
+      font-weight:900;
+      margin:0 0 6px;
+      letter-spacing:-.03em;
+    }
+    .counter-caption{
+      color:rgba(255,255,255,.84);
+      font-size:18px;
+      line-height:1.3;
+    }
+    .cooldown{
+      color:rgba(255,255,255,.72);
+      font-size:14px;
+      padding-left:2px;
+    }
+
+    .pulse{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      font-size:44px;
+      pointer-events:none;
+      z-index:10;
+      opacity:0;
+    }
+    .pulse.show{animation:pulseOut 1.25s ease-out forwards}
+    @keyframes pulseOut{
+      0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+      15%{opacity:1}
+      60%{opacity:1;transform:translate(-50%,-62%) scale(1.25)}
+      100%{opacity:0;transform:translate(-50%,-86%) scale(1.65)}
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translateX(-50%) translateY(18px);
+      opacity:0;
+      background:#fff;
+      color:#111;
+      padding:12px 18px;
+      border-radius:999px;
+      font-weight:750;
+      transition:.2s;
+      z-index:20;
+      pointer-events:none;
+      box-shadow:0 14px 30px rgba(0,0,0,.22);
+    }
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    @media(max-width:900px){
+      .top-title{
+        top:7vh;
+        width:min(92vw,680px);
+      }
+      .title{font-size:clamp(40px,9vw,64px)}
+      .tagline{font-size:clamp(16px,4.4vw,22px)}
+      .bottom-grid{
+        grid-template-columns:1fr;
+        gap:16px;
+      }
+      .heart-col{
+        justify-content:center;
+      }
+      .info-col{
+        gap:12px;
+      }
+      .counter-card{
+        text-align:center;
+      }
+    }
+
+    @media(max-width:700px){
+      .hero{
+        padding:14px 14px 16px;
+      }
+      .top-title{
+        top:8vh;
+      }
+      .eyebrow{
+        font-size:10px;
+        margin-bottom:8px;
+      }
+      .title{
+        font-size:clamp(34px,12vw,50px);
+      }
+      .tagline{
+        margin-top:10px;
+        font-size:15px;
+      }
+      .bottom-panel{
+        width:94vw;
+        border-radius:28px;
+        padding:16px 16px 18px;
+      }
+      .heart-button{
+        width:112px;
+        height:112px;
+        font-size:58px;
+      }
+      .counter-card{
+        padding:14px 14px 15px;
+        border-radius:20px;
+      }
+      .count{font-size:44px}
+      .counter-caption{font-size:15px}
+      .cooldown{
+        font-size:12px;
+        text-align:center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="hero">
+    <img src="assets/cover.png" alt="Москва и Ханчжоу" class="hero-bg" />
+    <div class="hero-overlay"></div>
+
+    <section class="top-title">
+      <div class="eyebrow">МОСКВА ❤️ ХАНЧЖОУ</div>
+      <h1 class="title">Нажми на Сердце</h1>
+      <p class="tagline">Наши километры превращаем в сердечки ❤️</p>
+    </section>
+
+    <section class="bottom-panel">
+      <div class="bottom-grid">
+        <div class="heart-col">
+          <button id="heartBtn" class="heart-button" aria-label="Добавить сердечко">❤️</button>
+        </div>
+
+        <div class="info-col">
+          <div class="counter-card">
+            <div id="totalCount" class="count">0</div>
+            <div class="counter-caption">сердечек мы собрали вместе</div>
+          </div>
+
+          <div id="cooldownText" class="cooldown">
+            Новое сердечко можно добавить через 30 минут
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="pulse" class="pulse">❤️</div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "PASTE_SUPABASE_URL_HERE";
+    const SUPABASE_ANON_KEY = "PASTE_SUPABASE_ANON_KEY_HERE";
+
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const heartBtn = document.getElementById("heartBtn");
+    const totalCount = document.getElementById("totalCount");
+    const cooldownText = document.getElementById("cooldownText");
+    const toast = document.getElementById("toast");
+    const pulse = document.getElementById("pulse");
+
+    const COOLDOWN_MS = 30 * 60 * 1000;
+    const LAST_SENT_KEY = "couple_heart_last_sent";
+    let timerId = null;
+
+    function showToast(text){
+      toast.textContent = text;
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"),2200);
+    }
+
+    function showPulse(){
+      pulse.classList.remove("show");
+      void pulse.offsetWidth;
+      pulse.classList.add("show");
+    }
+
+    function getLastSent(){
+      return Number(localStorage.getItem(LAST_SENT_KEY) || 0);
+    }
+
+    function updateCooldown(){
+      if(timerId) clearTimeout(timerId);
+
+      const remaining = COOLDOWN_MS - (Date.now() - getLastSent());
+
+      if(remaining <= 0){
+        heartBtn.disabled = false;
+        cooldownText.textContent = "Можно добавить сердечко сейчас ❤️";
+        return;
+      }
+
+      heartBtn.disabled = true;
+      const sec = Math.ceil(remaining / 1000);
+      const min = Math.floor(sec / 60);
+      const s = sec % 60;
+      cooldownText.textContent = `Новое сердечко через ${min}:${String(s).padStart(2,"0")}`;
+      timerId = setTimeout(updateCooldown,1000);
+    }
+
+    async function refreshCounter(){
+      const { data, error } = await sb.rpc("get_heart_total");
+      if(error){
+        console.error(error);
+        totalCount.textContent = "—";
+        return;
+      }
+      totalCount.textContent = data ?? 0;
+    }
+
+    heartBtn.addEventListener("click", async ()=>{
+      heartBtn.disabled = true;
+
+      const { data, error } = await sb.rpc("send_heart_common");
+      if(error){
+        heartBtn.disabled = false;
+        showToast("Не получилось добавить сердечко");
+        return;
+      }
+
+      localStorage.setItem(LAST_SENT_KEY,String(Date.now()));
+      totalCount.textContent = data ?? totalCount.textContent;
+
+      showPulse();
+      showToast("Еще одно наше сердечко ❤️");
+      updateCooldown();
+    });
+
+    refreshCounter();
+    updateCooldown();
+    setInterval(refreshCounter,15000);
+  </script>
+</body>
+</html>
